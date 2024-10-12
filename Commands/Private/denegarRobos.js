@@ -26,8 +26,8 @@ module.exports = {
     async execute(interation, client) {
         try {
             //Verficar que rol tiene el usuario
-            const rolesUser = interation.member.roles.cache.map(role => role.id);  // Obtener array de roles del usuario
-            const validarRol = rolesUser.some(roleId => config.ROLE_ADMIN.includes(roleId));  // Verificar si el usuario tiene al menos uno de los roles de administrador
+            const rolesUser = interation.member.roles.cache.map(role => role.id); // Obtener array de roles del usuario
+            const validarRol = rolesUser.find(roleId => config.ROLE_ADMIN.includes(roleId)); // Verificar si el usuario tiene al menos uno de los roles de administrador y obtener el id del rol que concuerda
 
             if (!validarRol) {
                 return interation.reply({ content: 'No tienes permisos para ejecutar este comando', ephemeral: true });
@@ -58,12 +58,12 @@ module.exports = {
                 )
                 .setColor('#E4080A')
 
-            interation.reply({ embeds: [embed] ,  ephemeral: true });
+            interation.reply({ embeds: [embed], ephemeral: true });
 
             const channel = client.channels.cache.get('1290755213959102545');  // Reemplaza con el ID del canal
             const fecha = new Date();
             await channel.send({
-                content: ` Robo solicitado por la organización <@&${roleId}>, Ha sido rechazado por **${interation.user.tag}** el ${fecha.toLocaleDateString()}.`,
+                content: ` Robo solicitado por la organización <@&${roleId}>, Ha sido rechazado por **${interation.user.tag}** el ${fecha.toLocaleDateString()}, de la Faccion legal <@&${validarRol}>`,
                 embeds: [embed]
             });
 

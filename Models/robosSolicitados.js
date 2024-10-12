@@ -9,7 +9,9 @@ let robosSchema = new Schema({
     hora: String,
     robo: String,
     personas: Number,
-    aprobado : Boolean
+    aprobado : Boolean,
+    resultado : String,
+    fechaResultado : Date
 }, {
     versionKey: false
 })
