@@ -1,37 +1,36 @@
 const { Events } = require('discord.js');
-
-const anunciosOrg = require('../../Models/anunciosOrg');
+const misionOrg = require('../../Models/misionesOrg');
 
 
 module.exports = {
     name: Events.InteractionCreate,
-    customId: 'anunciosOrg',
+    customId: 'misionesOrg',
     once: false,
+
     /**
      * @param {ChatInputCommandInteraction} interaction
      * @param {Client} client
      */
 
-    async execute(interaction) {
+    async execute(interaction, client) {
         const { customId, member } = interaction;
         if (!interaction.isModalSubmit()) return;
-
-        if (customId == 'anunciosModal') {
+        if (customId === 'misiones-modal') {
             try {
-                const data = await anunciosOrg.find({ guildId: interaction.guild.id });
+                const data = await misionOrg.find({ guildId: interaction.guild.id });
 
                 if (data.length > 0) {
-                    const anuncioDesc = interaction.fields.getTextInputValue('anunciosTextInput');
-                    for (const anuncio of data) {
-                        const anuncioChannel = member.guild.channels.cache.get(anuncio.canalAnuncios);
-                        await anuncioChannel.send(anuncioDesc);
+                    const misionesDesc = interaction.fields.getTextInputValue('misiones-input');
+                    for (const mision of data) {
+                        const anuncioChannel = interaction.guild.channels.cache.get(mision.canalAnuncios);
+                        await anuncioChannel.send(misionesDesc);
                     }
-                    await interaction.reply({ content: 'Anuncio enviado correctamente a todas las org', ephemeral: true });
-                } else {
-                    await interaction.reply({ content: 'No hay canales registrados para anuncios 😒', ephemeral: true });
-                }
 
-            } catch (error) {
+                    await interaction.reply({ content: 'Misiones enviadas con éxito', ephemeral: true });
+                } else {
+                    await interaction.reply({ content: 'No hay misiones configuradas', ephemeral: true });
+                }
+            } catch (e) {
                 console.error('Error al enviar mensaje de anuncio:', error);
                 // Asegúrate de manejar el error correctamente
                 if (error.code === 'InteractionAlreadyReplied') {
@@ -41,7 +40,5 @@ module.exports = {
                 }
             }
         }
-
     }
-
 }
