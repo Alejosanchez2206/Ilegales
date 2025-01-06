@@ -42,10 +42,10 @@ module.exports = {
             const rol = options.getRole('rol')
             const name = options.getString('name')
 
-            const data = await autoMembers.findOne({ guild: interaction.guild.id  , guildRol: rol.id })
+            const data = await autoMembers.findOne({ guild: interaction.guild.id , guildRol: rol.id })
 
             if (data) {
-                await autoMembers.findOneAndUpdate({ guildAutoMembers: interaction.guild.id }, {
+                await autoMembers.findOneAndUpdate({ guild: interaction.guild.id , guildRol: rol.id }, {
                     $set: {
                         guildChannel: channel.id,
                         guildRol: rol.id,
