@@ -17,7 +17,7 @@ module.exports = {
 
             // ID del servidor
             const guildId = newMember.guild.id;
-
+            
             // Procesar roles agregados
             if (addedRoles.size > 0) {
                 for (const role of addedRoles.values()) {
@@ -73,7 +73,7 @@ async function handleRoleUpdate(role, member, guildId) {
         );
 
         // Contar el total de miembros con el rol
-        const totalMembers = membersWithRole.size;
+        const totalMembers = membersWithRole.size;        
 
         // Crear lista de miembros ordenada alfabéticamente
         const memberList = membersWithRole

@@ -66,7 +66,7 @@ module.exports = {
 
             const date = new Date();
             const dateResultado = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
-            console.log(`Fecha y hora en Colombia: ${dateResultado}`);
+           
 
             await roboSchema.findOneAndUpdate({ idrobo: idRobo }, { resultado: result, fechaResultado: date });
 
@@ -79,7 +79,7 @@ module.exports = {
                     { name: '🕒 **Hora**', value: `${robo.hora}` },
                     { name: '📝 **Robo**', value: `${robo.robo}` },
                     { name: '👥 **Personas**', value: `${robo.personas}` },
-                    { name: '📝 **Ganadores**', value: `${robo.resultado}` },
+                    { name: '📝 **Ganadores**', value: `${result}` },
                     { name: '📅 **Fecha del resultado**', value: `${dateResultado}` }
                 ).setColor('#00ff00');
 
