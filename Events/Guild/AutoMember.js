@@ -17,7 +17,7 @@ module.exports = {
 
             // ID del servidor
             const guildId = newMember.guild.id;
-            
+
             // Procesar roles agregados
             if (addedRoles.size > 0) {
                 for (const role of addedRoles.values()) {
@@ -73,7 +73,7 @@ async function handleRoleUpdate(role, member, guildId) {
         );
 
         // Contar el total de miembros con el rol
-        const totalMembers = membersWithRole.size;        
+        const totalMembers = membersWithRole.size;
 
         // Crear lista de miembros ordenada alfabéticamente
         const memberList = membersWithRole
@@ -86,7 +86,7 @@ async function handleRoleUpdate(role, member, guildId) {
         await channel.send({
             content: `**Nombre : ** ${role.name}\n\n**Total de miembros:** ${totalMembers}\n\n**Miembros Oficiales:**\n${memberList}`,
         });
-       
+
     } catch (err) {
         console.error(`Error al manejar la actualización del rol ${role.name}:`, err);
     }

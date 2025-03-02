@@ -1,9 +1,10 @@
-const { model , Schema } = require('mongoose')
+const { model, Schema } = require('mongoose')
 
 let negociosSchema = new Schema({
     guildNegocio: String,
-    guildRol : String,
-    nombreOrganizacion: String
+    guildRol: String,
+    nombreOrganizacion: String,
+    puntosOrg: Number
 }, {
     versionKey: false
 })

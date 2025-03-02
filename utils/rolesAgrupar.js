@@ -1,7 +1,6 @@
 
 const agruparRoles = async (roleId, channelId) => {
     try {
-        console.log('Agrupando roles...');
         const guild = client.guilds.cache.first();
         const role = guild.roles.cache.get(roleId);
         if (!role) return console.log('Rol no encontrado');

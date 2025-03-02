@@ -1,22 +1,11 @@
-const {
-    StringSelectMenuBuilder,
-    StringSelectMenuOptionBuilder,
-    ActionRowBuilder,
-    SlashCommandBuilder,
-    Client,
-    ChatInputCommandInteraction,
-    ComponentType,
-    EmbedBuilder
-} = require('discord.js');
-
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const roboSchema = require('../../Models/robosSolicitados');
 const config = require('../../config.json');
-const { data } = require('./denegarRobos');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('result-robos')
-        .setDescription('Resultado de un robo ,decir el resultado de un robo')
+        .setDescription('Resultado de un robo - Actualiza el resultado de un robo')
         .addStringOption(option =>
             option.setName('id-robo')
                 .setDescription('ID del robo')
@@ -24,78 +13,91 @@ module.exports = {
         )
         .addStringOption(option =>
             option.setName('result')
-                .setDescription('Quien gano el robo')
+                .setDescription('Quién ganó el robo')
                 .setRequired(true)
                 .addChoices(
-                    { name: 'Facciones Legales', value: 'Facciones Legales Legales' },
+                    { name: 'Facciones Legales', value: 'Facciones Legales' },
                     { name: 'Organizaciones ilegales', value: 'Organizaciones ilegales' },
                     { name: 'No hubo ganadores', value: 'No hubo ganadores' }
                 )
         ),
 
-    /** 
-    * @param {ChatInputCommandInteraction} interation
-    * @param {Client} client
-    * @returns {Promise<void>}
-    *      
-    */
-
-
-    async execute(interation, client) {
+    async execute(interaction, client) {
         try {
-            //Verficar que rol tiene el usuario
-            const rolesUser = interation.member.roles.cache.map(role => role.id); // Obtener array de roles del usuario
-            const validarRol = rolesUser.find(roleId => config.ROLE_ADMIN.includes(roleId)); // Verificar si el usuario tiene al menos uno de los roles de administrador y obtener el id del rol que concuerda
+            // Verificación de roles
+            const rolesUser = interaction.member.roles.cache;
+            const tienePermiso = config.ROLE_ADMIN.some(roleId => rolesUser.has(roleId));
 
-
-            if (!validarRol) {
-                return interation.reply({ content: 'No tienes permisos para ejecutar este comando', ephemeral: true });
+            if (!tienePermiso) {
+                return interaction.reply({
+                    content: '⛔ No tienes permisos para este comando',
+                    ephemeral: true
+                });
             }
 
-            const { options } = interation;
+            // Obtener parámetros
+            const idRobo = interaction.options.getString('id-robo');
+            const result = interaction.options.getString('result');
 
-            const idRobo = options.getString('id-robo');
-            const result = options.getString('result');
-
+            // Buscar en la base de datos
             const robo = await roboSchema.findOne({ idrobo: idRobo });
-
             if (!robo) {
-                return interation.reply({ content: 'No se encontro el robo', ephemeral: true });
+                return interaction.reply({
+                    content: '❌ No se encontró el robo especificado',
+                    ephemeral: true
+                });
             }
 
-
-            const date = new Date();
-            const dateResultado = new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" });
-           
-
-            await roboSchema.findOneAndUpdate({ idrobo: idRobo }, { resultado: result, fechaResultado: date });
-
-            const embed = new EmbedBuilder()
-                .setTitle('🔔 **Resultado de robo**')
-                .addFields(
-                    { name: '🆔 **ID**', value: `\`\`\`cmd\n${idRobo}\n\`\`\`` },
-                    { name: '🏴 **Organización**', value: `<@&${robo.organizacion}>` },
-                    { name: '📅 **Día**', value: `${robo.fecha}` },
-                    { name: '🕒 **Hora**', value: `${robo.hora}` },
-                    { name: '📝 **Robo**', value: `${robo.robo}` },
-                    { name: '👥 **Personas**', value: `${robo.personas}` },
-                    { name: '📝 **Ganadores**', value: `${result}` },
-                    { name: '📅 **Fecha del resultado**', value: `${dateResultado}` }
-                ).setColor('#00ff00');
-
-            await interation.reply({ embeds: [embed], ephemeral: true });
-
-            const channel = client.channels.cache.get('1294695195551727730');
-
-            await channel.send({
-                content: `Este es el resultado del robo ${idRobo} `,
-                embeds: [embed]
+            // Actualizar registro
+            const fechaResultado = new Date().toLocaleString("es-CO", {
+                timeZone: "America/Bogota",
+                dateStyle: 'full',
+                timeStyle: 'short'
             });
 
-        } catch (err) {
-            console.log(err);
-            return interation.reply({ content: `Ocurrio un error al ejecutar el comando ${interation.commandName}`, ephemeral: true });
+            await roboSchema.updateOne(
+                { idrobo: idRobo },
+                {
+                    resultado: result,
+                    fechaResultado: new Date()
+                }
+            );
+
+            // Crear embed
+            const embed = new EmbedBuilder()
+                .setTitle('🎯 Resultado de Robo')
+                .setColor('#2ecc71')
+                .addFields(
+                    { name: '🆔 ID del Robo', value: `\`${idRobo}\``, inline : false },
+                    { name: '🏴 Organización', value: `<@&${robo.organizacion}>`, inline: false },
+                    { name: '📅 Fecha Original', value: robo.fecha, inline: false },
+                    { name: '🕒 Hora', value: robo.hora, inline: false },
+                    { name: '📝 Tipo de Robo', value: robo.robo, inline: false },
+                    { name: '👥 Participantes', value: robo.personas.toString(), inline: false },
+                    { name: '🏆 Resultado', value: `**${result}**`, inline: false },
+                    { name: '📅 Fecha de Resultado', value: fechaResultado, inline: false }
+                );
+
+            // Responder al usuario
+            await interaction.reply({
+                embeds: [embed],
+                ephemeral: true
+            });
+
+            // Enviar a canal de registros
+            const logChannel = client.channels.cache.get('1294695195551727730'); // Usar ID desde config
+            if (logChannel?.isTextBased()) {
+                await logChannel.send({
+                    embeds: [embed]
+                });
+            }
+
+        } catch (error) {
+            console.error('Error en comando result-robos:', error);
+            interaction.reply({
+                content: '⚠️ Error crítico al procesar la solicitud',
+                ephemeral: true
+            }).catch(console.error);
         }
     }
-
-}
+};
